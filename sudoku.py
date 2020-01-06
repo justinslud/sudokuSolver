@@ -1,6 +1,5 @@
 import numpy as np
 
-#todo have checks return True if got a new tile num
 class Sudoku:
     def __init__(self, grid):
         self.grid = grid
