@@ -1,6 +1,5 @@
 import numpy as np
 
-#todo have checks return True if got a new tile num
 class Sudoku:
     def __init__(self, grid):
         self.grid = grid
@@ -17,8 +16,8 @@ class Sudoku:
             8:{'vertadj':[2,5], 'rowadj':[6,7], 'coladj':[0,1]}
         }
 
-    def update_grid(self, tile_row, tile_col, num):
-        self.grid[9*tile_row + tile_col] = num
+    def update_grid(self, row_num, col_num, num):
+        self.grid[9*row_num + col_num] = num
         print('only {} more tiles left!'.format(self.grid.count(0)))
         self.grid_to_parts()
 
@@ -38,47 +37,47 @@ class Sudoku:
         if not all(sorted(square) == list(range(1,10)) for square in self.squares): return False
         return True
 
-    def get_square(self, row, col):
-        return 3*(row // 3) + (col % 3)
+    def get_square(self, row_num, col_num):
+        return 3*(row_num // 3) + (col_num % 3)
 
-    def check_simple_force(self, tile_row, tile_col, num):
-        square_num = self.get_square(tile_row, tile_col)
-        row, col, square = self.rows[tile_row], self.cols[tile_col], self.squares[square_num]
+
+    def check_simple_force(self, row_num, col_num, num):
+        square_num = self.get_square(row_num, col_num)
+        row, col, square = self.rows[row_num], self.cols[col_num], self.squares[square_num]
         if num in row or num in col or num in square: return
 
-        #square_info = self.info[square_num]
-        tile_info = self.info[3*(tile_row//3) + tile_col%3]
-        if tile_row == 4 and tile_col == 0 and num == 2:print(tile_info, 3*(tile_row//3) + tile_col%3)
+        tile_info = self.info[3*(row_num//3) + col_num%3]
+        if row_num == 4 and col_num == 0 and num == 2:print(tile_info, 3*(row_num//3) + col_num%3)
 
-        if row[tile_col] != 0: return
-        if num in self.rows[tile_row//3 + tile_info['coladj'][0]] and num in self.rows[tile_row//3 + tile_info['coladj'][1]]:
-            if num in self.cols[tile_col//3 + tile_info['coladj'][0]] and num in self.cols[tile_col//3 + tile_info['rowadj'][1]]:    
+        if row[col_num] != 0: return
+        if num in self.rows[row_num//3 + tile_info['coladj'][0]] and num in self.rows[row_num//3 + tile_info['coladj'][1]]:
+            if num in self.cols[col_num//3 + tile_info['coladj'][0]] and num in self.cols[col_num//3 + tile_info['rowadj'][1]]:    
                 print('made it this far!')
-                self.update_grid(tile_row, tile_col, num)
+                self.update_grid(row_num, col_num, num)
                 return True
-            elif self.rows[tile_row][tile_info['rowadj'][0]] != 0 and self.rows[tile_row][tile_info['rowadj'][1]] != 0:
+            elif self.rows[row_num][tile_info['rowadj'][0]] != 0 and self.rows[row_num][tile_info['rowadj'][1]] != 0:
                 print('made it this far!')
-                self.update_grid(tile_row, tile_col, num)
+                self.update_grid(row_num, col_num, num)
                 return True
     
-    def check_row_finish(self, tile_row):
-        row = self.rows[tile_row]
+    def check_row_finish(self, row_num):
+        row = self.rows[row_num]
         if row.count(0) == 1:
-            self.update_grid(tile_row, row.index(0), sum(set(list(range(1,10))) - set(row)))
+            self.update_grid(row_num, row.index(0), sum(set(list(range(1,10))) - set(row)))
             return True
 
         elif row.count(0) == 2:
             for element in set(list(range(1,10))) - set(row):
-                self.check_simple_force(tile_row, row.index(0), element)
+                self.check_simple_force(row_num, row.index(0), element)
     
-    def check_col_finish(self, tile_col):
-        col = self.cols[tile_col]
+    def check_col_finish(self, col_num):
+        col = self.cols[col_num]
         if col.count(0) == 1:
-            self.update_grid(col.index(0), tile_col, sum(set(list(range(1,10))) - set(col)))
+            self.update_grid(col.index(0), col_num, sum(set(list(range(1,10))) - set(col)))
 
         elif col.count(0) == 2:
             for element in set(list(range(1,10))) - set(col):
-                self.check_simple_force(col.index(0), tile_col, element)
+                self.check_simple_force(col.index(0), col_num, element)
     
     def check_square_finish(self, square_num):
         square = self.squares[square_num]
@@ -98,13 +97,13 @@ class Sudoku:
             for square_num in range(9):
                 self.check_square_finish(square_num)
             #print('this is the {}th loop!'.format(loops))
-            for tile_row, row in enumerate(self.rows):
-                self.check_row_finish(tile_row)
-                self.check_col_finish(tile_row)
-                for tile_col, num in enumerate(row):
+            for row_num, row in enumerate(self.rows):
+                self.check_row_finish(row_num)
+                self.check_col_finish(row_num)
+                for col_num, num in enumerate(row):
                     if num == 0:
                         for i in range(1,10):
-                            self.check_simple_force(tile_row, tile_col, i)
+                            self.check_simple_force(row_num, col_num, i)
             loops += 1
         return self.grid
 
